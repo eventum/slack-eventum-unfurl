@@ -1,7 +1,7 @@
 {
     "name": "eventum/slack-unfurl-eventum",
     "description": "Eventum issue links unfurler for slack-unfurl",
-    "license": "BSD",
+    "license": "MIT",
     "config": {
         "sort-packages": true
     },
