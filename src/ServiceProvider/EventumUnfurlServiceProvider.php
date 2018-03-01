@@ -20,7 +20,7 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
         $app['eventum.username'] = getenv('EVENTUM_USERNAME');
         $app['eventum.access_token'] = getenv('EVENTUM_ACCESS_TOKEN');
         $app['eventum.domain'] = getenv('EVENTUM_DOMAIN');
-        $app['eventum.timezone'] = getenv('TIMEZONE');
+        $app['eventum.timezone'] = getenv('EVENTUM_TIMEZONE');
 
         $app[Eventum_RPC::class] = function ($app) {
             $client = new Eventum_RPC($app['eventum.rpc_url']);
