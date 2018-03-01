@@ -1,0 +1,21 @@
+{
+    "name": "eventum/eventum-slack-unfurl",
+    "description": "Eventum issue links unfurler for slack-unfurl",
+    "license": "BSD",
+    "type": "project",
+    "config": {
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Eventum\\SlackUnfurl\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^7.1.3",
+        "eventum/rpc": "^4.1"
+    },
+    "require-dev": {
+        "eventum/slack-unfurl": "~0.3.0"
+    }
+}
