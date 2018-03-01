@@ -1,8 +1,7 @@
 {
-    "name": "eventum/eventum-slack-unfurl",
+    "name": "eventum/slack-unfurl-eventum",
     "description": "Eventum issue links unfurler for slack-unfurl",
     "license": "BSD",
-    "type": "project",
     "config": {
         "sort-packages": true
     },
@@ -16,6 +15,6 @@
         "eventum/rpc": "^4.1"
     },
     "require-dev": {
-        "eventum/slack-unfurl": "~0.3.0"
+        "glen/slack-unfurl": "~0.3.0"
     }
 }
