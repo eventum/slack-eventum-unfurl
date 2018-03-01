@@ -76,7 +76,7 @@ class EventumUnfurler implements EventSubscriberInterface
 
     public function unfurl(UnfurlEvent $event)
     {
-        foreach ($this->getMatchingLinks($event) as $link) {
+        foreach ($event->getMatchingLinks($this->domain) as $link) {
             $issueId = $this->getIssueId($link);
             if (!$issueId) {
                 $this->error('Could not extract issueId', ['link' => $link]);
@@ -152,18 +152,6 @@ class EventumUnfurler implements EventSubscriberInterface
         $lastUpdated->setTimezone($this->timeZone);
 
         return $lastUpdated;
-    }
-
-    private function getMatchingLinks(UnfurlEvent $event)
-    {
-        foreach ($event->getLinks() as $link) {
-            $domain = $link['domain'] ?? null;
-            if ($domain !== $this->domain) {
-                continue;
-            }
-
-            yield $link;
-        }
     }
 
     private function getIssueId($link): ?int
