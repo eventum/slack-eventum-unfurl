@@ -6,9 +6,10 @@ use Eventum\SlackUnfurl\Event\Subscriber\EventumUnfurler;
 use Eventum_RPC;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
+use Silex\Api\EventListenerProviderInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
-class EventumUnfurlServiceProvider implements ServiceProviderInterface
+class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventListenerProviderInterface
 {
     /**
      * {@inheritdoc}
@@ -36,11 +37,10 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface
                 $app['logger']
             );
         };
+    }
 
-        $app->extend('unfurl.dispatcher', function (EventDispatcherInterface $dispatcher, $app) {
-            $dispatcher->addSubscriber($app[EventumUnfurler::class]);
-
-            return $dispatcher;
-        });
+    public function subscribe(Container $app, EventDispatcherInterface $dispatcher)
+    {
+        $dispatcher->addSubscriber($app[EventumUnfurler::class]);
     }
 }
