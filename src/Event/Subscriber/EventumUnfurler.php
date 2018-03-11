@@ -97,6 +97,7 @@ class EventumUnfurler implements EventSubscriberInterface
         return [
             'title' => "{$issue['prc_title']} <$url|Issue #{$issueId}> : {$issue['iss_summary']}",
             'color' => '#006486',
+            'ts' => $issue['iss_created_date_ts'],
             'footer' => "Created by {$issue['reporter']}",
             'fields' => [
                 [
