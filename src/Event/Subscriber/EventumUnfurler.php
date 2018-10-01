@@ -139,17 +139,14 @@ class EventumUnfurler implements EventSubscriberInterface
     }
 
     /**
-     * Get last update whether internal or public last action date
+     * Get issue last update in local timezone
      *
      * @param array $issue
      * @return DateTime last action date in specified timeZone
      */
     private function getLastUpdate(array $issue)
     {
-        $ts1 = new DateTime($issue['iss_last_internal_action_date'], $this->utc);
-        $ts2 = new DateTime($issue['iss_last_public_action_date'], $this->utc);
-
-        $lastUpdated = $ts1 > $ts2 ? $ts1 : $ts2;
+        $lastUpdated = new DateTime($issue['iss_updated_date'], $this->utc);
         $lastUpdated->setTimezone($this->timeZone);
 
         return $lastUpdated;
