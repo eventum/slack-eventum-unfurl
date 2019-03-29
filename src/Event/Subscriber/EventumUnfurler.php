@@ -67,14 +67,14 @@ class EventumUnfurler implements EventSubscriberInterface
     /**
      * {@inheritdoc}
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             Events::SLACK_UNFURL => ['unfurl', 10],
         ];
     }
 
-    public function unfurl(UnfurlEvent $event)
+    public function unfurl(UnfurlEvent $event): void
     {
         foreach ($event->getMatchingLinks($this->domain) as $link) {
             $issueId = $this->getIssueId($link);
@@ -89,7 +89,7 @@ class EventumUnfurler implements EventSubscriberInterface
         }
     }
 
-    public function getIssueUnfurl(int $issueId, string $url)
+    public function getIssueUnfurl(int $issueId, string $url): array
     {
         $issue = $this->getIssueDetails($issueId);
         $this->debug('issue', ['issue' => $issue]);
@@ -128,10 +128,10 @@ class EventumUnfurler implements EventSubscriberInterface
      * Get issue details, but filter only needed keys.
      *
      * @param int $issueId
-     * @return array
      * @throws Eventum_RPC_Exception
+     * @return array
      */
-    private function getIssueDetails(int $issueId)
+    private function getIssueDetails(int $issueId): array
     {
         $issue = $this->apiClient->getIssueDetails($issueId);
 
@@ -144,7 +144,7 @@ class EventumUnfurler implements EventSubscriberInterface
      * @param array $issue
      * @return DateTime last action date in specified timeZone
      */
-    private function getLastUpdate(array $issue)
+    private function getLastUpdate(array $issue): DateTime
     {
         $lastUpdated = new DateTime($issue['iss_updated_date'], $this->utc);
         $lastUpdated->setTimezone($this->timeZone);

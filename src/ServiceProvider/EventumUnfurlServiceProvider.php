@@ -14,7 +14,7 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
     /**
      * {@inheritdoc}
      */
-    public function register(Container $app)
+    public function register(Container $app): void
     {
         $app['eventum.rpc_url'] = getenv('EVENTUM_RPC_URL');
         $app['eventum.username'] = getenv('EVENTUM_USERNAME');
@@ -39,7 +39,7 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
         };
     }
 
-    public function subscribe(Container $app, EventDispatcherInterface $dispatcher)
+    public function subscribe(Container $app, EventDispatcherInterface $dispatcher): void
     {
         $dispatcher->addSubscriber($app[EventumUnfurler::class]);
     }
