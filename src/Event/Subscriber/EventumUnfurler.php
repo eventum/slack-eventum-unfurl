@@ -8,6 +8,7 @@ use Eventum\RPC\EventumXmlRpcClient;
 use Eventum\RPC\XmlRpcException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use SlackUnfurl\Event\Events;
 use SlackUnfurl\Event\UnfurlEvent;
 use SlackUnfurl\Traits\LoggerTrait;
@@ -77,16 +78,27 @@ class EventumUnfurler implements EventSubscriberInterface
     public function unfurl(UnfurlEvent $event): void
     {
         foreach ($event->getMatchingLinks($this->domain) as $link) {
-            $issueId = $this->getIssueId($link);
-            if (!$issueId) {
-                $this->error('Could not extract issueId', ['link' => $link]);
-                continue;
+            try {
+                $unfurl = $this->unfurlByUrl($link['url']);
+                if ($unfurl) {
+                    $event->addUnfurl($link['url'], $unfurl);
+                }
+            } catch (RuntimeException $e) {
+                $this->debug("eventum: {$e->getMessage()}");
             }
-
-            $url = $link['url'];
-            $unfurl = $this->getIssueUnfurl($issueId, $url);
-            $event->addUnfurl($url, $unfurl);
         }
+    }
+
+    private function unfurlByUrl(string $url): ?array
+    {
+        $issueId = $this->getIssueId($url);
+        if (!$issueId) {
+            $this->error('Could not extract issueId', ['url' => $url]);
+
+            return null;
+        }
+
+        return $this->getIssueUnfurl($issueId, $url);
     }
 
     public function getIssueUnfurl(int $issueId, string $url): array
@@ -152,9 +164,9 @@ class EventumUnfurler implements EventSubscriberInterface
         return $lastUpdated;
     }
 
-    private function getIssueId($link): ?int
+    private function getIssueId(string $url): ?int
     {
-        if (!preg_match('#view.php\?id=(?P<id>\d+)#', $link['url'], $m)) {
+        if (!preg_match('#view.php\?id=(?P<id>\d+)#', $url, $m)) {
             return null;
         }
 
