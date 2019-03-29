@@ -2,8 +2,8 @@
 
 namespace Eventum\SlackUnfurl\ServiceProvider;
 
+use Eventum\RPC\EventumXmlRpcClient;
 use Eventum\SlackUnfurl\Event\Subscriber\EventumUnfurler;
-use Eventum_RPC;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Silex\Api\EventListenerProviderInterface;
@@ -22,8 +22,8 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
         $app['eventum.domain'] = getenv('EVENTUM_DOMAIN');
         $app['eventum.timezone'] = getenv('EVENTUM_TIMEZONE');
 
-        $app[Eventum_RPC::class] = function ($app) {
-            $client = new Eventum_RPC($app['eventum.rpc_url']);
+        $app[EventumXmlRpcClient::class] = function ($app) {
+            $client = new EventumXmlRpcClient($app['eventum.rpc_url']);
             $client->setCredentials($app['eventum.username'], $app['eventum.access_token']);
 
             return $client;
@@ -31,7 +31,7 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
 
         $app[EventumUnfurler::class] = function ($app) {
             return new EventumUnfurler(
-                $app[Eventum_RPC::class],
+                $app[EventumXmlRpcClient::class],
                 $app['eventum.domain'],
                 $app['eventum.timezone'],
                 $app['logger']

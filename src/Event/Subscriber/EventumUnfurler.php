@@ -4,8 +4,8 @@ namespace Eventum\SlackUnfurl\Event\Subscriber;
 
 use DateTime;
 use DateTimeZone;
-use Eventum_RPC;
-use Eventum_RPC_Exception;
+use Eventum\RPC\EventumXmlRpcClient;
+use Eventum\RPC\XmlRpcException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use SlackUnfurl\Event\Events;
@@ -17,7 +17,7 @@ class EventumUnfurler implements EventSubscriberInterface
 {
     use LoggerTrait;
 
-    /** @var Eventum_RPC */
+    /** @var EventumXmlRpcClient */
     private $apiClient;
     /** @var DateTimeZone */
     private $utc;
@@ -48,7 +48,7 @@ class EventumUnfurler implements EventSubscriberInterface
     ];
 
     public function __construct(
-        Eventum_RPC $apiClient,
+        EventumXmlRpcClient $apiClient,
         string $domain,
         string $timeZone,
         LoggerInterface $logger
@@ -128,7 +128,7 @@ class EventumUnfurler implements EventSubscriberInterface
      * Get issue details, but filter only needed keys.
      *
      * @param int $issueId
-     * @throws Eventum_RPC_Exception
+     * @throws XmlRpcException
      * @return array
      */
     private function getIssueDetails(int $issueId): array
