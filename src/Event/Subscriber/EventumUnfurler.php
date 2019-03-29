@@ -10,7 +10,7 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use SlackUnfurl\Event\Events;
 use SlackUnfurl\Event\UnfurlEvent;
-use SlackUnfurl\LoggerTrait;
+use SlackUnfurl\Traits\LoggerTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EventumUnfurler implements EventSubscriberInterface
