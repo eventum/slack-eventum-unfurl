@@ -4,9 +4,12 @@ namespace Eventum\SlackUnfurl\ServiceProvider;
 
 use Eventum\RPC\EventumXmlRpcClient;
 use Eventum\SlackUnfurl\Event\Subscriber\EventumUnfurler;
+use Eventum\SlackUnfurl\Route;
+use Eventum\SlackUnfurl\Route\EventumRoutes;
 use Pimple\Container;
 use Pimple\ServiceProviderInterface;
 use Silex\Api\EventListenerProviderInterface;
+use SlackUnfurl\CommandResolver;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventListenerProviderInterface
@@ -29,10 +32,22 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
             return $client;
         };
 
+        $app[EventumRoutes::class] = function ($app) {
+            return new EventumRoutes($app['eventum.domain']);
+        };
+
         $app[EventumUnfurler::class] = function ($app) {
             return new EventumUnfurler(
-                $app[EventumXmlRpcClient::class],
+                $app[EventumRoutes::class],
+                $app[CommandResolver::class],
                 $app['eventum.domain'],
+                $app['logger']
+            );
+        };
+
+        $app[Route\Issue::class] = function ($app) {
+            return new Route\Issue(
+                $app[EventumXmlRpcClient::class],
                 $app['eventum.timezone'],
                 $app['logger']
             );

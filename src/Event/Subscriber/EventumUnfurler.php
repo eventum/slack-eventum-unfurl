@@ -2,15 +2,14 @@
 
 namespace Eventum\SlackUnfurl\Event\Subscriber;
 
-use DateTime;
-use DateTimeZone;
-use Eventum\RPC\EventumXmlRpcClient;
-use Eventum\RPC\XmlRpcException;
+use Eventum\SlackUnfurl\Route;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use SlackUnfurl\CommandResolver;
 use SlackUnfurl\Event\Events;
 use SlackUnfurl\Event\UnfurlEvent;
+use SlackUnfurl\Route\RouteMatcher;
 use SlackUnfurl\Traits\LoggerTrait;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -18,47 +17,29 @@ class EventumUnfurler implements EventSubscriberInterface
 {
     use LoggerTrait;
 
-    /** @var EventumXmlRpcClient */
-    private $apiClient;
-    /** @var DateTimeZone */
-    private $utc;
     /** @var string */
     private $domain;
-    /** @var DateTimeZone */
-    private $timeZone;
 
-    /**
-     * getDetails keys to retrieve
-     * @see getIssueDetails
-     */
-    private const MATCH_KEYS = [
-        'assignments',
-        'iss_created_date',
-        'iss_created_date_ts',
-        'iss_description',
-        'iss_id',
-        'iss_last_internal_action_date',
-        'iss_last_public_action_date',
-        'iss_original_description',
-        'iss_summary',
-        'iss_updated_date',
-        'prc_title',
-        'pri_title',
-        'reporter',
-        'sta_title',
+    private const ROUTES = [
+        'issue' => Route\Issue::class,
     ];
 
+    /** @var RouteMatcher */
+    private $routeMatcher;
+
+    /** @var CommandResolver */
+    private $commandResolver;
+
     public function __construct(
-        EventumXmlRpcClient $apiClient,
+        RouteMatcher $routeMatcher,
+        CommandResolver $commandResolver,
         string $domain,
-        string $timeZone,
         LoggerInterface $logger
     ) {
         $this->logger = $logger;
         $this->domain = $domain;
-        $this->apiClient = $apiClient;
-        $this->utc = new DateTimeZone('UTC');
-        $this->timeZone = new DateTimeZone($timeZone);
+        $this->routeMatcher = $routeMatcher;
+        $this->commandResolver = $commandResolver;
 
         if (!$this->domain) {
             throw new InvalidArgumentException('Domain not set');
@@ -91,85 +72,12 @@ class EventumUnfurler implements EventSubscriberInterface
 
     private function unfurlByUrl(string $url): ?array
     {
-        $issueId = $this->getIssueId($url);
-        if (!$issueId) {
-            $this->error('Could not extract issueId', ['url' => $url]);
+        [$router, $matches] = $this->routeMatcher->match($url);
 
-            return null;
-        }
+        $command = $this->commandResolver
+            ->configure(self::ROUTES)
+            ->resolve($router);
 
-        return $this->getIssueUnfurl($issueId, $url);
-    }
-
-    public function getIssueUnfurl(int $issueId, string $url): array
-    {
-        $issue = $this->getIssueDetails($issueId);
-        $this->debug('issue', ['issue' => $issue]);
-
-        return [
-            'title' => "{$issue['prc_title']} <$url|Issue #{$issueId}> : {$issue['iss_summary']}",
-            'color' => '#006486',
-            'ts' => $issue['iss_created_date_ts'],
-            'footer' => "Created by {$issue['reporter']}",
-            'fields' => [
-                [
-                    'title' => 'Priority',
-                    'value' => $issue['pri_title'],
-                    'short' => true,
-                ],
-                [
-                    'title' => 'Assignment',
-                    'value' => $issue['assignments'],
-                    'short' => true,
-                ],
-                [
-                    'title' => 'Status',
-                    'value' => $issue['sta_title'],
-                    'short' => true,
-                ],
-                [
-                    'title' => 'Last update',
-                    'value' => $this->getLastUpdate($issue)->format('Y-m-d H:i:s'),
-                    'short' => true,
-                ],
-            ],
-        ];
-    }
-
-    /**
-     * Get issue details, but filter only needed keys.
-     *
-     * @param int $issueId
-     * @throws XmlRpcException
-     * @return array
-     */
-    private function getIssueDetails(int $issueId): array
-    {
-        $issue = $this->apiClient->getIssueDetails($issueId);
-
-        return array_intersect_key($issue, array_flip(self::MATCH_KEYS));
-    }
-
-    /**
-     * Get issue last update in local timezone
-     *
-     * @param array $issue
-     * @return DateTime last action date in specified timeZone
-     */
-    private function getLastUpdate(array $issue): DateTime
-    {
-        $lastUpdated = new DateTime($issue['iss_updated_date'], $this->utc);
-        $lastUpdated->setTimezone($this->timeZone);
-
-        return $lastUpdated;
-    }
-
-    private function getIssueId(string $url): ?int
-    {
-        if (!preg_match('#view.php\?id=(?P<id>\d+)#', $url, $m)) {
-            return null;
-        }
-
-        return (int)$m['id'];
+        return $command->unfurl($url, $matches);
     }
 }
