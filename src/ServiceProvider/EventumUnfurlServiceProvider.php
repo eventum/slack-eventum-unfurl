@@ -3,6 +3,7 @@
 namespace Eventum\SlackUnfurl\ServiceProvider;
 
 use Eventum\RPC\EventumXmlRpcClient;
+use Eventum\SlackUnfurl\ApiClient;
 use Eventum\SlackUnfurl\Event\Subscriber\EventumUnfurler;
 use Eventum\SlackUnfurl\Route;
 use Eventum\SlackUnfurl\Route\EventumRoutes;
@@ -29,6 +30,10 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
             return $client;
         };
 
+        $app[ApiClient::class] = static function ($app) {
+            return new ApiClient($app[EventumXmlRpcClient::class]);
+        };
+
         $app[EventumRoutes::class] = static function ($app) {
             return new EventumRoutes($app['eventum.domain']);
         };
@@ -44,7 +49,7 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
 
         $app[Route\Issue::class] = static function ($app) {
             return new Route\Issue(
-                $app[EventumXmlRpcClient::class],
+                $app[ApiClient::class],
                 $app['eventum.timezone'],
                 $app['logger']
             );
@@ -52,7 +57,7 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
 
         $app[Route\Note::class] = static function ($app) {
             return new Route\Note(
-                $app[EventumXmlRpcClient::class],
+                $app[ApiClient::class],
                 $app['logger']
             );
         };

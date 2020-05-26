@@ -3,8 +3,7 @@
 namespace Eventum\SlackUnfurl\Route;
 
 use DateTimeZone;
-use Eventum\RPC\EventumXmlRpcClient;
-use Eventum\RPC\XmlRpcException;
+use Eventum\SlackUnfurl\ApiClient;
 use Psr\Log\LoggerInterface;
 use SlackUnfurl\Traits\LoggerTrait;
 
@@ -12,38 +11,25 @@ class Note
 {
     use LoggerTrait;
 
-    /** @var EventumXmlRpcClient */
-    private $apiClient;
+    /** @var ApiClient */
+    private $client;
     /** @var DateTimeZone */
     private $utc;
     /** @var DateTimeZone */
     private $timeZone;
 
-    /**
-     * getDetails keys to retrieve
-     * @see getNoteDetails
-     */
-    private const MATCH_KEYS = [
-        'not_id',
-        'not_iss_id',
-        'not_title',
-        'not_from',
-        'not_note',
-        'not_created_date_ts',
-    ];
-
     public function __construct(
-        EventumXmlRpcClient $apiClient,
+        ApiClient $client,
         LoggerInterface $logger
     ) {
-        $this->apiClient = $apiClient;
+        $this->client = $client;
         $this->logger = $logger;
     }
 
     public function unfurl(string $url, array $parts): ?array
     {
         $noteId = (int)$parts['id'];
-        $note = $this->getNoteDetails($noteId);
+        $note = $this->client->getNoteDetails($noteId);
         $this->debug(' note', ['note' => $note]);
         $issueId = $note['not_iss_id'];
 
@@ -54,15 +40,5 @@ class Note
             'ts' => $note['not_created_date_ts'],
             'footer' => "Note by {$note['not_from']}",
         ];
-    }
-
-    /**
-     * @param int $noteId
-     * @throws XmlRpcException
-     * @return array
-     */
-    private function getNoteDetails(int $noteId): array
-    {
-        return $this->apiClient->getNoteDetails($noteId, self::MATCH_KEYS);
     }
 }
