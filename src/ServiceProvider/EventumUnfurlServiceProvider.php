@@ -14,9 +14,6 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventListenerProviderInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function register(Container $app): void
     {
         $app['eventum.rpc_url'] = getenv('EVENTUM_RPC_URL');
@@ -25,18 +22,18 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
         $app['eventum.domain'] = getenv('EVENTUM_DOMAIN');
         $app['eventum.timezone'] = getenv('EVENTUM_TIMEZONE');
 
-        $app[EventumXmlRpcClient::class] = function ($app) {
+        $app[EventumXmlRpcClient::class] = static function ($app) {
             $client = new EventumXmlRpcClient($app['eventum.rpc_url']);
             $client->setCredentials($app['eventum.username'], $app['eventum.access_token']);
 
             return $client;
         };
 
-        $app[EventumRoutes::class] = function ($app) {
+        $app[EventumRoutes::class] = static function ($app) {
             return new EventumRoutes($app['eventum.domain']);
         };
 
-        $app[EventumUnfurler::class] = function ($app) {
+        $app[EventumUnfurler::class] = static function ($app) {
             return new EventumUnfurler(
                 $app[EventumRoutes::class],
                 $app[CommandResolver::class],
@@ -45,7 +42,7 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
             );
         };
 
-        $app[Route\Issue::class] = function ($app) {
+        $app[Route\Issue::class] = static function ($app) {
             return new Route\Issue(
                 $app[EventumXmlRpcClient::class],
                 $app['eventum.timezone'],
