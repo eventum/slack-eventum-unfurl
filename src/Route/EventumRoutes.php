@@ -40,6 +40,7 @@ class EventumRoutes extends RouteMatcher
 
         return [
             'issue' => "^${base}/view\.php\?id=(?P<id>\d+)",
+            'note' => "^${base}/view_note\.php\?id=(?P<id>\d+)",
         ];
     }
 }

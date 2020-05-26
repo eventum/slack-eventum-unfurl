@@ -49,6 +49,13 @@ class EventumUnfurlServiceProvider implements ServiceProviderInterface, EventLis
                 $app['logger']
             );
         };
+
+        $app[Route\Note::class] = static function ($app) {
+            return new Route\Note(
+                $app[EventumXmlRpcClient::class],
+                $app['logger']
+            );
+        };
     }
 
     public function subscribe(Container $app, EventDispatcherInterface $dispatcher): void
