@@ -32,9 +32,10 @@ class Note
         $note = $this->client->getNoteDetails($noteId);
         $this->debug(' note', ['note' => $note]);
         $issueId = $note['not_iss_id'];
+        $issueUrl = $note['issue_url'];
 
         return [
-            'title' => "Note in <$url|Issue #{$issueId}>: {$note['not_title']}",
+            'title' => "Note in <$issueUrl|Issue #{$issueId}>: {$note['not_title']}",
             'text' => $note['not_note'],
             'color' => '#006486',
             'ts' => $note['not_created_date_ts'],

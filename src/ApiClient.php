@@ -55,6 +55,7 @@ class ApiClient
     public function getNoteDetails(int $noteId): array
     {
         $fields = [
+            'issue_url',
             'not_id',
             'not_iss_id',
             'not_title',
