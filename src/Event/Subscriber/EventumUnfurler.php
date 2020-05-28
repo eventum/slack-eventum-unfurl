@@ -22,6 +22,7 @@ class EventumUnfurler implements EventSubscriberInterface
 
     private const ROUTES = [
         'issue' => Route\Issue::class,
+        'note' => Route\Note::class,
     ];
 
     /** @var RouteMatcher */

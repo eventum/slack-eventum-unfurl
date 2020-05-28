@@ -4,8 +4,7 @@ namespace Eventum\SlackUnfurl\Route;
 
 use DateTime;
 use DateTimeZone;
-use Eventum\RPC\EventumXmlRpcClient;
-use Eventum\RPC\XmlRpcException;
+use Eventum\SlackUnfurl\ApiClient;
 use Psr\Log\LoggerInterface;
 use SlackUnfurl\Traits\LoggerTrait;
 
@@ -13,40 +12,19 @@ class Issue
 {
     use LoggerTrait;
 
-    /** @var EventumXmlRpcClient */
-    private $apiClient;
+    /** @var ApiClient */
+    private $client;
     /** @var DateTimeZone */
     private $utc;
     /** @var DateTimeZone */
     private $timeZone;
 
-    /**
-     * getDetails keys to retrieve
-     * @see getIssueDetails
-     */
-    private const MATCH_KEYS = [
-        'assignments',
-        'iss_created_date',
-        'iss_created_date_ts',
-        'iss_description',
-        'iss_id',
-        'iss_last_internal_action_date',
-        'iss_last_public_action_date',
-        'iss_original_description',
-        'iss_summary',
-        'iss_updated_date',
-        'prc_title',
-        'pri_title',
-        'reporter',
-        'sta_title',
-    ];
-
     public function __construct(
-        EventumXmlRpcClient $apiClient,
+        ApiClient $client,
         string $timeZone,
         LoggerInterface $logger
     ) {
-        $this->apiClient = $apiClient;
+        $this->client = $client;
         $this->logger = $logger;
         $this->utc = new DateTimeZone('UTC');
         $this->timeZone = new DateTimeZone($timeZone);
@@ -55,7 +33,7 @@ class Issue
     public function unfurl(string $url, array $parts): ?array
     {
         $issueId = (int)$parts['id'];
-        $issue = $this->getIssueDetails($issueId);
+        $issue = $this->client->getIssueDetails($issueId);
         $this->debug('issue', ['issue' => $issue]);
 
         return [
@@ -86,20 +64,6 @@ class Issue
                 ],
             ],
         ];
-    }
-
-    /**
-     * Get issue details, but filter only needed keys.
-     *
-     * @param int $issueId
-     * @throws XmlRpcException
-     * @return array
-     */
-    private function getIssueDetails(int $issueId): array
-    {
-        $issue = $this->apiClient->getIssueDetails($issueId);
-
-        return array_intersect_key($issue, array_flip(self::MATCH_KEYS));
     }
 
     /**
